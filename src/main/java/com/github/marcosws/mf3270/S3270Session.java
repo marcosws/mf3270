@@ -432,11 +432,26 @@ public class S3270Session implements AutoCloseable {
 	 * @return A resposta do s3270 para o comando de movimento do cursor
 	 * @throws IOException se ocorrer um erro de I/O ao enviar o comando ou ler a resposta
 	 */
-	public String connect(String host, String port, boolean useX3270) {
+	public String connect(String host, String port, boolean visible) {
 		
-		ProcessBuilder processBuilder = (useX3270 ? 
-				new ProcessBuilder("x3270","-script", host + ":" + port) :
-				new ProcessBuilder("s3270"));
+		String osName = System.getProperty("os.name").toLowerCase();
+		//String terminal = (osName.contains("windows") ? "ws3270" : "x3270");
+		
+		ProcessBuilder processBuilder = null;
+		
+		if(visible) {
+			if(osName.contains("windows")) {
+				processBuilder = new ProcessBuilder("ws3270", "-script", host + ":" + port);
+			}
+			else {
+				processBuilder = new ProcessBuilder("x3270","-script", host + ":" + port);
+			}
+		}
+		else {
+			processBuilder = new ProcessBuilder("s3270");
+		}
+				
+				
 		
 		
 		processBuilder.redirectErrorStream(true);
@@ -449,7 +464,7 @@ public class S3270Session implements AutoCloseable {
 		writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
 		reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 		
-		return (useX3270 ? "connection via (w)x3270\nok" : sendCommand("connect(" + host + ":" + port + ")"));
+		return (visible ? "connection via (w)x3270\nok" : sendCommand("connect(" + host + ":" + port + ")"));
 	}
 	
 	/**
