@@ -1,4 +1,4 @@
-package com.github.marcosws.mf3270;
+package com.github.marcosws.mf3270.test;
 
 import org.junit.jupiter.api.Test;
 

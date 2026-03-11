@@ -12,7 +12,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
 import com.github.marcosws.mf3270.enums.PAKey;
 import com.github.marcosws.mf3270.enums.PFKey;
 import com.github.marcosws.mf3270.enums.WaitType;
@@ -47,11 +46,9 @@ public class S3270Session implements AutoCloseable {
 	private Process process;
 	private BufferedWriter writer;
 	private BufferedReader reader;
-	
 	private ExecutorService executor;
 
 	public S3270Session() {
-        // SingleThreadExecutor por instância, isolado para testes
         executor = Executors.newSingleThreadExecutor();
 	}
 	
@@ -123,7 +120,9 @@ public class S3270Session implements AutoCloseable {
             String line;
             while ((line = reader.readLine()) != null) {
                 response.append(line).append("\n");
-                if ("ok".equals(line)) return response.toString();
+                if ("ok".equals(line)) {
+                	return response.toString();
+                }
                 if ("error".equals(line)) {
                     throw new S3270SessionException(
                         "S3270 returned error for command: " + command + "\nResponse:\n" + response
@@ -158,7 +157,9 @@ public class S3270Session implements AutoCloseable {
 	            String line;
 	            while ((line = reader.readLine()) != null) {
 	                response.append(line).append("\n");
-	                if ("ok".equals(line)) return response.toString();
+	                if ("ok".equals(line)) {
+	                	return response.toString();
+	                }
 	                if ("error".equals(line)) {
 	                    throw new S3270SessionException(
 	                        "S3270 returned error for command: " + command + "\nResponse:\n" + response
@@ -250,6 +251,7 @@ public class S3270Session implements AutoCloseable {
 
 		    sleep(150); // espera 500ms antes de tentar de novo
 		}
+;
 	    return rawScreen;
 		
 	}
@@ -315,7 +317,6 @@ public class S3270Session implements AutoCloseable {
 	                }
 	            }
 	        }
-
 	        return Optional.empty();
 
 	    } catch (IOException e) {
@@ -360,20 +361,15 @@ public class S3270Session implements AutoCloseable {
 	public String sendTextByField(String field, String text) {
 
 	    String screen = asciiScreen().replace("data:", "");
-
 	    Optional<CursorPosition> posOpt = findField(screen, field);
-
 	    if (posOpt.isEmpty()) {
 	        throw new S3270SessionException(
 	            "Field '" + field + "' not found in screen."
 	        );
 	    }
-
 	    CursorPosition pos = posOpt.get();
-
 	    int row = pos.getRow() - 1;
 	    int col = pos.getCol() - 1;
-
 	    return moveAndSendString(row, col, text);
 	}
 	
@@ -432,28 +428,20 @@ public class S3270Session implements AutoCloseable {
 	 * @return A resposta do s3270 para o comando de movimento do cursor
 	 * @throws IOException se ocorrer um erro de I/O ao enviar o comando ou ler a resposta
 	 */
-	public String connect(String host, String port, boolean visible) {
+	public String connect(String host, String port, boolean x3270Visible) {
 		
 		String osName = System.getProperty("os.name").toLowerCase();
-		//String terminal = (osName.contains("windows") ? "ws3270" : "x3270");
-		
 		ProcessBuilder processBuilder = null;
 		
-		if(visible) {
-			if(osName.contains("windows")) {
+		if(x3270Visible) {
+			if(osName.contains("windows")) 
 				processBuilder = new ProcessBuilder("ws3270", "-script", host + ":" + port);
-			}
-			else {
+			else 
 				processBuilder = new ProcessBuilder("x3270","-script", host + ":" + port);
-			}
 		}
 		else {
 			processBuilder = new ProcessBuilder("s3270");
 		}
-				
-				
-		
-		
 		processBuilder.redirectErrorStream(true);
 		try {
 			process = processBuilder.start();
@@ -464,7 +452,7 @@ public class S3270Session implements AutoCloseable {
 		writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
 		reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 		
-		return (visible ? "connection via (w)x3270\nok" : sendCommand("connect(" + host + ":" + port + ")"));
+		return (x3270Visible ? "connection via x3270\nok" : sendCommand("connect(" + host + ":" + port + ")"));
 	}
 	
 	/**
@@ -598,16 +586,12 @@ public class S3270Session implements AutoCloseable {
 	public void waitForText(String text, int timeoutMillis) {
 
 	    long start = System.currentTimeMillis();
-
 	    while (System.currentTimeMillis() - start < timeoutMillis) {
-
 	        if (getScreen().contains(text)) {
 	            return;
 	        }
-
 	        sleep(200);
 	    }
-
 	    throw new S3270SessionException("Timeout waiting for text: " + text);
 	}
 		
@@ -757,5 +741,6 @@ public class S3270Session implements AutoCloseable {
 			e.printStackTrace();
 		}
 	}
+	
 
 }
