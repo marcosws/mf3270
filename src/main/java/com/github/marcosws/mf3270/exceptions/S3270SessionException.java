@@ -7,6 +7,9 @@ package com.github.marcosws.mf3270.exceptions;
  * or any other session-related problems in the S3270 terminal interaction.
  * It extends RuntimeException, allowing it to be thrown without being declared in method signatures.
  * The class provides constructors for creating exceptions with a message and an optional cause.	
+ * @author Marcos Willian de Souza
+ * @version 1.0
+ * @since 2026-04
  */
 public class S3270SessionException extends RuntimeException {
 	

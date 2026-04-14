@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 
+        Logback configuration for tests
+        Suprime logs de testes de exceções esperadas
+    -->
+    
+    <!-- Console Appender (mínimo verbosidade) -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Logger específico para mf3270 durante testes -->
+    <!-- ERROR nível para silenciar tudo, mostrando apenas FATAL -->
+    <logger name="com.github.marcosws.mf3270" level="OFF" />
+
+    <!-- Root Logger -->
+    <root level="ERROR">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

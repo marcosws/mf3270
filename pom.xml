@@ -4,19 +4,34 @@
 
   <groupId>com.github.marcosws</groupId>
   <artifactId>mf3270</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.2</version>
   <packaging>jar</packaging>
 
   <name>mf3270</name>
   <url>http://maven.apache.org</url>
-
+  <!-- 
+	  <name>mf3270</name>
+  <description>Java library for mainframe 3270 terminal automation via s3270</description>
+  <url>https://github.com/marcosws/mf3270</url>
+	
+  -->
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.source>11</maven.compiler.source>
+    <slf4j.version>2.0.11</slf4j.version>
   </properties>
 
   <dependencies>
+  
+    <!-- SLF4J API (abstração de logging) -->
+    <!-- Source: https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+  
 	<!-- Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
 	<dependency>
 	    <groupId>org.junit.jupiter</groupId>
@@ -24,6 +39,15 @@
 	    <version>5.14.3</version>
 	    <scope>test</scope>
 	</dependency>
+	
+	<!-- Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
+	<dependency>
+	    <groupId>org.junit.jupiter</groupId>
+	    <artifactId>junit-jupiter-engine</artifactId>
+	    <version>5.14.3</version>
+	    <scope>test</scope>
+	</dependency>
+	
 	<!-- Source: https://mvnrepository.com/artifact/org.mockito/mockito-core -->
 	<dependency>
 	    <groupId>org.mockito</groupId>
@@ -31,5 +55,22 @@
 	    <version>5.22.0</version>
 	    <scope>test</scope>
 	</dependency>
+	
+	<!-- Source: https://mvnrepository.com/artifact/org.mockito/mockito-junit-jupiter -->
+	<dependency>
+	    <groupId>org.mockito</groupId>
+	    <artifactId>mockito-junit-jupiter</artifactId>
+	    <version>5.22.0</version>
+	    <scope>test</scope>
+	</dependency>
+	
+	<!-- Source: https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
+	<dependency>
+	    <groupId>ch.qos.logback</groupId>
+	    <artifactId>logback-classic</artifactId>
+	    <version>1.5.3</version>
+	    <scope>test</scope>
+	</dependency>
+	
   </dependencies>
 </project>

@@ -2,8 +2,11 @@ package com.github.marcosws.mf3270.enums;
 
 
 /**
- * Enumeração para as teclas PF (Program Function) do terminal 3270.
- * Cada tecla PF é associada a um número de 1 a 24.
+ * Enum representing the PF keys (Program Function keys) used in 3270 terminal sessions.
+ * Each PF key is associated with a specific integer value that corresponds to its position on the terminal keyboard. The enum provides a method to retrieve the integer value of each PF key, which can be used in the underlying implementation to send the appropriate commands to the terminal when a PF key is pressed.
+ * @author Marcos Willian de Souza
+ * @version 1.0
+ * @since 2026-04
  */
 public enum PFKey {
 	

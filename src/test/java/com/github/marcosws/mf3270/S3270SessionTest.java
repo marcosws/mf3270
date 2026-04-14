@@ -1,7 +1,7 @@
 package com.github.marcosws.mf3270;
 
-
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.io.BufferedReader;
@@ -9,143 +9,293 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.github.marcosws.mf3270.exceptions.S3270SessionException;
 
-
-public class S3270SessionTest {
+/**
+ * Unit tests for S3270Session class using JUnit 5.
+ * Tests low-level I/O operations with mocked Process and streams.
+ * 
+ * @author Marcos Willian de Souza
+ * @version 1.0
+ * @since 2026-04
+ */
+@DisplayName("S3270Session Unit Tests")
+class S3270SessionTest {
 
 	private S3270Session session;
-    private BufferedWriter mockWriter;
-    private BufferedReader mockReader;
-
-    @BeforeEach
-    void setup() throws IOException {
-        session = new S3270Session();
-
-        // Mock Writer e Reader
-        mockWriter = spy(new BufferedWriter(new StringWriter()));
-        mockReader = spy(new BufferedReader(new StringReader("line1\nline2\nok\n")));
-
-        // Injetando mocks na sessão
-        session.getClass().getDeclaredFields(); // apenas para referência
-        setPrivateField(session, "writer", mockWriter);
-        setPrivateField(session, "reader", mockReader);
-        setPrivateField(session, "process", mock(Process.class));
-    }
-
-    private void setPrivateField(Object target, String fieldName, Object value) {
-        try {
-            var field = target.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            field.set(target, value);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Test
-    void testSendCommandReturnsOk() {
-        String result = session.sendCommand("DummyCommand");
-        assertTrue(result.contains("ok"));
-    }
-
-    @Test
-    void testAsciiScreen() throws IOException {
-
-        S3270Session session = spy(new S3270Session());
-
-        // mock do waitFor
-        doReturn("ok").when(session).waitFor(any());
-
-        // mock do sendCommand
-        doReturn("data: screen line 1\ndata: screen line 2\nok")
-            .when(session)
-            .sendCommand("Ascii()");
-
-        String result = session.asciiScreen();
-
-        assertNotNull(result);
-        assertTrue(result.contains("screen line 1"));
-        
-    }
-
-    @Test
-    void testGetCursorPosition() throws IOException {
-        // Preparando reader simulado para cursor
-        StringReader sr = new StringReader("row 5 col 10\nok\n");
-        BufferedReader reader = new BufferedReader(sr);
-        setPrivateField(session, "reader", reader);
-
-        Optional<CursorPosition> posOpt = session.getCursorPosition();
-        assertTrue(posOpt.isPresent());
-        CursorPosition pos = posOpt.get();
-        assertEquals(5, pos.getRow());
-        assertEquals(10, pos.getCol());
-    }
-
-    @Test
-    void testTimeout() {
-        BufferedReader slowReader = mock(BufferedReader.class);
-        try {
-            when(slowReader.readLine()).thenAnswer(invocation -> {
-                Thread.sleep(2000); // simula delay maior que timeout
-                return "ok";
-            });
-        } catch (Exception ignored) {}
-        setPrivateField(session, "reader", slowReader);
-
-        S3270SessionException ex = assertThrows(S3270SessionException.class, () -> {
-            session.sendCommand("AnyCommand", 500); // timeout de 500ms
-        });
-        assertTrue(ex.getMessage().contains("Timeout"));
-    }
-
-    @Test
-    void testFindField() {
-        String screen = "Username: \nPassword: \n";
-        Optional<CursorPosition> posOpt = session.findField(screen, "Username:");
-        assertTrue(posOpt.isPresent());
-        assertEquals(1, posOpt.get().getRow()); // logo após "Username:"
-        assertEquals(10, posOpt.get().getCol()); // logo após os dois pontos
-    }
-
-    @Test
-    void testSendTextByLabel() throws IOException {
-    	
-        // Cria um spy da sessão
-        S3270Session session = spy(new S3270Session());
-
-        // Mock dos streams e processo
-        BufferedReader reader = mock(BufferedReader.class);
-        BufferedWriter writer = mock(BufferedWriter.class);
-        Process process = mock(Process.class);
-
-        // Injeta os campos privados simulando conexão ativa
-        setPrivateField(session, "reader", reader);
-        setPrivateField(session, "writer", writer);
-        setPrivateField(session, "process", process);
-
-        // Mock da tela para findField
-        String screen = "Username: ______\nPassword: ______\nok";
-        doReturn(screen).when(session).asciiScreen(); // ou getScreen(), se usar
-
-        // Mock de comandos para não executar código real
-        doReturn("ok").when(session).moveCursor(anyInt(), anyInt());
-        doReturn("ok").when(session).sendCommand(startsWith("String("));
-
-        // Executa o método
-        String result = session.sendTextByField("Username:", "admin");
-
-        // Verificações
-        assertNotNull(result);
-        verify(session).moveCursor(0, 9); // posição do campo depois do label
-        verify(session).sendCommand("String(\"admin\")");
-        
-    }
 	
+	@BeforeEach
+	void setUp() {
+		session = new S3270Session();
+	}
+	
+	// ============== CONSTRUCTOR TEST ==============
+	
+	@Test
+	@DisplayName("Should create S3270Session with initialized executor")
+	void testConstructor() {
+		assertNotNull(session);
+	}
+	
+	// ============== SESSION VALIDATION TESTS ==============
+	
+	@Test
+	@DisplayName("checkSession should throw exception when not connected")
+	void testCheckSessionNotConnected() {
+		S3270SessionException exception = assertThrows(
+			S3270SessionException.class,
+			() -> session.checkSession()
+		);
+		
+		assertTrue(exception.getMessage().contains("not initialized"));
+		assertTrue(exception.getMessage().contains("connect"));
+	}
+	
+	// ============== SEND COMMAND TESTS ==============
+	
+	@Test
+	@DisplayName("sendCommand should send command and read response")
+	void testSendCommand() throws IOException {
+		// Setup
+		StringWriter writerStream = new StringWriter();
+		BufferedWriter mockWriter = new BufferedWriter(writerStream);
+		StringReader readerStream = new StringReader("response line1\nok\n");
+		BufferedReader mockReader = new BufferedReader(readerStream);
+		Process mockProcess = mock(Process.class);
+		
+		// Inject mocks
+		setPrivateField(session, "writer", mockWriter);
+		setPrivateField(session, "reader", mockReader);
+		setPrivateField(session, "process", mockProcess);
+		
+		// Execute
+		String result = session.sendCommand("TestCommand");
+		
+		// Verify
+		assertNotNull(result);
+		assertTrue(result.contains("ok"));
+	}
+	
+	@Test
+	@DisplayName("sendCommand should throw exception on error response")
+	void testSendCommandError() throws IOException {
+		// Setup
+		StringWriter writerStream = new StringWriter();
+		BufferedWriter mockWriter = new BufferedWriter(writerStream);
+		StringReader readerStream = new StringReader("error\n");
+		BufferedReader mockReader = new BufferedReader(readerStream);
+		Process mockProcess = mock(Process.class);
+		
+		// Inject mocks
+		setPrivateField(session, "writer", mockWriter);
+		setPrivateField(session, "reader", mockReader);
+		setPrivateField(session, "process", mockProcess);
+		
+		// Execute & Verify
+		S3270SessionException exception = assertThrows(
+			S3270SessionException.class,
+			() -> session.sendCommand("FailCommand")
+		);
+		
+		assertTrue(exception.getMessage().contains("error"));
+		assertTrue(exception.getMessage().contains("FailCommand"));
+	}
+	
+	@Test
+	@DisplayName("sendCommand with timeout should execute with deadline")
+	void testSendCommandWithTimeout() throws IOException {
+		// Setup
+		StringWriter writerStream = new StringWriter();
+		BufferedWriter mockWriter = new BufferedWriter(writerStream);
+		StringReader readerStream = new StringReader("response\nok\n");
+		BufferedReader mockReader = new BufferedReader(readerStream);
+		Process mockProcess = mock(Process.class);
+		
+		// Inject mocks
+		setPrivateField(session, "writer", mockWriter);
+		setPrivateField(session, "reader", mockReader);
+		setPrivateField(session, "process", mockProcess);
+		
+		// Execute
+		String result = session.sendCommand("TestCommand", 5000);
+		
+		// Verify
+		assertNotNull(result);
+		assertTrue(result.contains("ok"));
+	}
+	
+	@Test
+	@DisplayName("sendCommand with timeout should throw on timeout")
+	void testSendCommandTimeout() throws IOException, InterruptedException {
+		// Setup: Create mock reader that delays
+		StringWriter writerStream = new StringWriter();
+		BufferedWriter mockWriter = spy(new BufferedWriter(writerStream));
+		
+		// Mock reader that simulates slow response
+		BufferedReader mockReader = mock(BufferedReader.class);
+		when(mockReader.readLine()).thenAnswer(invocation -> {
+			Thread.sleep(2000); // Simulate delay longer than timeout
+			return "ok";
+		});
+		
+		Process mockProcess = mock(Process.class);
+		
+		// Inject mocks
+		setPrivateField(session, "writer", mockWriter);
+		setPrivateField(session, "reader", mockReader);
+		setPrivateField(session, "process", mockProcess);
+		
+		// Execute & Verify
+		S3270SessionException exception = assertThrows(
+			S3270SessionException.class,
+			() -> session.sendCommand("SlowCommand", 100)
+		);
+		
+		assertTrue(exception.getMessage().contains("Timeout"));
+	}
+	
+	// ============== CONNECTION TESTS ==============
+	
+	@Test
+	@DisplayName("disconnect should send Disconnect command")
+	void testDisconnect() throws IOException {
+		// Setup
+		StringWriter writerStream = new StringWriter();
+		BufferedWriter mockWriter = new BufferedWriter(writerStream);
+		StringReader readerStream = new StringReader("ok\n");
+		BufferedReader mockReader = new BufferedReader(readerStream);
+		Process mockProcess = mock(Process.class);
+		
+		// Inject mocks
+		setPrivateField(session, "writer", mockWriter);
+		setPrivateField(session, "reader", mockReader);
+		setPrivateField(session, "process", mockProcess);
+		
+		// Execute
+		String result = session.disconnect();
+		
+		// Verify
+		assertNotNull(result);
+		assertTrue(result.contains("ok"));
+	}
+	
+	@Test
+	@DisplayName("isConnected should return true when connected")
+	void testIsConnectedTrue() throws IOException {
+		// Setup
+		StringWriter writerStream = new StringWriter();
+		BufferedWriter mockWriter = new BufferedWriter(writerStream);
+		StringReader readerStream = new StringReader("connected-3270\nok\n");
+		BufferedReader mockReader = new BufferedReader(readerStream);
+		Process mockProcess = mock(Process.class);
+		
+		// Inject mocks
+		setPrivateField(session, "writer", mockWriter);
+		setPrivateField(session, "reader", mockReader);
+		setPrivateField(session, "process", mockProcess);
+		
+		// Execute
+		boolean connected = session.isConnected();
+		
+		// Verify
+		assertTrue(connected);
+	}
+	
+	@Test
+	@DisplayName("isConnected should return false when not connected")
+	void testIsConnectedFalse() throws IOException {
+		// Setup
+		StringWriter writerStream = new StringWriter();
+		BufferedWriter mockWriter = new BufferedWriter(writerStream);
+		StringReader readerStream = new StringReader("not-connected\nok\n");
+		BufferedReader mockReader = new BufferedReader(readerStream);
+		Process mockProcess = mock(Process.class);
+		
+		// Inject mocks
+		setPrivateField(session, "writer", mockWriter);
+		setPrivateField(session, "reader", mockReader);
+		setPrivateField(session, "process", mockProcess);
+		
+		// Execute
+		boolean connected = session.isConnected();
+		
+		// Verify
+		assertFalse(connected);
+	}
+	
+	// ============== CLOSE TESTS ==============
+	
+	@Test
+	@DisplayName("close should clean up resources")
+	void testClose() throws IOException, InterruptedException {
+		// Setup
+		BufferedWriter mockWriter = mock(BufferedWriter.class);
+		BufferedReader mockReader = mock(BufferedReader.class);
+		Process mockProcess = mock(Process.class);
+		when(mockProcess.isAlive()).thenReturn(true);
+		when(mockProcess.waitFor(anyLong(), any(TimeUnit.class))).thenReturn(true);
+		
+		// Inject mocks
+		setPrivateField(session, "writer", mockWriter);
+		setPrivateField(session, "reader", mockReader);
+		setPrivateField(session, "process", mockProcess);
+		
+		// Execute
+		session.close();
+		
+		// Verify
+		verify(mockWriter).close();
+		verify(mockReader).close();
+		verify(mockProcess).destroy();
+	}
+	
+	@Test
+	@DisplayName("close should handle IOException gracefully")
+	void testCloseWithIOException() throws IOException {
+		// Setup
+		BufferedWriter mockWriter = mock(BufferedWriter.class);
+		doThrow(new IOException("Mock close error")).when(mockWriter).close();
+		
+		BufferedReader mockReader = mock(BufferedReader.class);
+		Process mockProcess = mock(Process.class);
+		when(mockProcess.isAlive()).thenReturn(false);
+		
+		// Inject mocks
+		setPrivateField(session, "writer", mockWriter);
+		setPrivateField(session, "reader", mockReader);
+		setPrivateField(session, "process", mockProcess);
+		
+		// Execute & Verify
+		S3270SessionException exception = assertThrows(
+			S3270SessionException.class,
+			() -> session.close()
+		);
+		
+		assertTrue(exception.getMessage().contains("Error closing"));
+	}
+	
+	// ============== HELPER METHODS ==============
+	
+	/**
+	 * Utility method to inject private fields for testing.
+	 * Uses reflection to set private fields on the session object.
+	 */
+	private void setPrivateField(Object target, String fieldName, Object value) {
+		try {
+			var field = target.getClass().getDeclaredField(fieldName);
+			field.setAccessible(true);
+			field.set(target, value);
+		} catch (Exception e) {
+			throw new RuntimeException(
+				String.format("Failed to set private field '%s'", fieldName), e
+			);
+		}
+	}
+
 }

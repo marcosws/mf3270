@@ -1,4 +1,5 @@
-/media/marcos/LOCAL01/projetos/eclipse/mf3270/src/test/java/com/github/marcosws/mf3270/OsDetect.java
+/media/marcos/LOCAL01/projetos/eclipse/mf3270/src/test/java/com/github/marcosws/mf3270/S3270EmulatorTest.java
 /media/marcos/LOCAL01/projetos/eclipse/mf3270/src/test/java/com/github/marcosws/mf3270/S3270SessionTest.java
-/media/marcos/LOCAL01/projetos/eclipse/mf3270/src/test/java/com/github/marcosws/mf3270/ScriptS3270.java
-/media/marcos/LOCAL01/projetos/eclipse/mf3270/src/test/java/com/github/marcosws/mf3270/Teste.java
+/media/marcos/LOCAL01/projetos/eclipse/mf3270/src/test/java/com/github/marcosws/mf3270/test/OsDetect.java
+/media/marcos/LOCAL01/projetos/eclipse/mf3270/src/test/java/com/github/marcosws/mf3270/test/ScriptS3270.java
+/media/marcos/LOCAL01/projetos/eclipse/mf3270/src/test/java/com/github/marcosws/mf3270/test/Teste.java
