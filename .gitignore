@@ -1,0 +1,45 @@
+# Eclipse
+.settings/
+.project
+.classpath
+
+# Maven
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Java
+*.class
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# IDE
+*.iml
+.idea/
+
+# Test output
+/test-output/
+
+# Eclipse local history
+/.metadata/
+
+# Build
+/build/
+
+# VSCode
+.vscode/
+
+# Others
+*.swp
+*~
+
+# Allure
+/allure-results/
+
+# User-specific
+*.local
+*.tmp

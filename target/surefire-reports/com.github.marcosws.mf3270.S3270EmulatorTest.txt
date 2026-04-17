@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.github.marcosws.mf3270.S3270EmulatorTest
--------------------------------------------------------------------------------
-Tests run: 39, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.23 s -- in com.github.marcosws.mf3270.S3270EmulatorTest

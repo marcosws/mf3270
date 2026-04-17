@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import com.github.marcosws.mf3270.enums.PAKey;
 import com.github.marcosws.mf3270.enums.PFKey;
 import com.github.marcosws.mf3270.enums.WaitType;
-import com.github.marcosws.mf3270.exceptions.S3270SessionException;
+import com.github.marcosws.mf3270.exceptions.S3270EmulatorException;
 import com.github.marcosws.mf3270.utils.CursorPosition;
 
 /**
@@ -132,7 +132,7 @@ public class S3270Emulator {
 	    String screen = asciiScreen().replace("data:", "");
 	    Optional<CursorPosition> posOpt = getPositionField(screen, field);
 	    if (posOpt.isEmpty()) {
-	        throw new S3270SessionException(
+	        throw new S3270EmulatorException(
 	            "Field '" + field + "' not found in screen."
 	        );
 	    }
@@ -163,7 +163,7 @@ public class S3270Emulator {
 		Optional<CursorPosition> posOpt = getPositionField(screen, field);
 		
 	    if (posOpt.isEmpty()) {
-	        throw new S3270SessionException(
+	        throw new S3270EmulatorException(
 	            "Field '" + field + "' not found in screen."
 	        );
 	    }
@@ -287,7 +287,7 @@ public class S3270Emulator {
 	        }
 	        sleep(200);
 	    }
-	    throw new S3270SessionException("Timeout waiting for text: " + text);
+	    throw new S3270EmulatorException("Timeout waiting for text: " + text);
 	}
 		
 	/**
@@ -466,7 +466,7 @@ public class S3270Emulator {
 	 * Example: if the screen contains "Username: user123" on line 5, and you want to get the username starting from column 11 with a size of 7, you would call getText(new CursorPosition(5, 11), 7) and it would return "user123".
 	 * 
 	 */
-	public String getText (CursorPosition position, int sizeText) {
+	public String getText(CursorPosition position, int sizeText) {
 		logger.info("Getting text from the screen starting from position (row: {}, col: {}) with size {}", position.getRow(), position.getCol(), sizeText);
 		String screen = asciiScreen();
 		int contRow = 0;
@@ -494,7 +494,7 @@ public class S3270Emulator {
 		if(posOpt.isPresent()) 
 			position = posOpt.get();
 		else
-			throw new S3270SessionException("Field '" + field + "' not found in screen.");
+			throw new S3270EmulatorException("Field '" + field + "' not found in screen.");
 		return getText(position, sizeText);
 	}
 	
@@ -504,7 +504,7 @@ public class S3270Emulator {
 	 * @param field The text of the label that identifies the input field
 	 * @param sizeText The number of characters to be obtained starting from the calculated position before the field
 	 * @return The text obtained from the screen based on the calculated position before the field and size specified
-	 * @throws S3270SessionException if the label is not found on the screen
+	 * @throws S3270EmulatorException if the label is not found on the screen
 	 */
 	public String getTextBeforeField(String field, int sizeText) {
 		logger.info("Getting text from the screen before field '{}' with size {}", field, sizeText);
@@ -513,10 +513,59 @@ public class S3270Emulator {
 		if(posOpt.isPresent()) 
 			position = posOpt.get();
 		else
-			throw new S3270SessionException("Field '" + field + "' not found in screen.");
+			throw new S3270EmulatorException("Field '" + field + "' not found in screen.");
 		int calcColumn = Math.abs((position.getCol() - 1) - sizeText);
 		int newColumn = Math.abs(calcColumn - field.length());
 		return getText(new CursorPosition(position.getRow(), newColumn), sizeText);
 	}
+	
+	
+	/**
+	 * GetTextBottonField(field, sizeText, offsetRow)
+	 * English: Gets text from the screen that is located below a field identified by a label
+	 * It first finds the position of the field using the label, calculates the new row position by adding the offsetRow to the original row position, and then retrieves the text starting from that new position for a specified number of characters. The method assumes that the position is based on 1 (the first row and column are considered as 1) and that the sizeText does not exceed the line length from the original column. It throws an exception if the label is not found on the screen.
+	 * Example: if the screen contains "Username: user123" on line 5,
+	 * and you want to get the text located 2 rows below starting from the same column with a size of 10, you would call getTextBottonField("Username:", 10, 2) and it would return the text located at that position.
+	 * @param field
+	 * @param sizeText
+	 * @param offsetRow
+	 * @return
+	 */
+	public String getTextBottonField(String field, int sizeText, int offsetRow) {
+		logger.info("Getting text from the screen below field '{}' with size {} and row offset {}", field, sizeText, offsetRow);
+		CursorPosition position;
+		Optional<CursorPosition> posOpt = getPositionField(asciiScreen(), field);
+		if(posOpt.isPresent()) 
+			position = posOpt.get();
+		else
+			throw new S3270EmulatorException("Field '" + field + "' not found in screen.");
+		int newRow = Math.abs(position.getRow() + offsetRow);
+		int newCol = Math.abs((position.getCol() - 1) - field.length());
+		return getText(new CursorPosition(newRow, newCol), sizeText);
+	}
+	
+	/**
+	 * GetTextTopField(field, sizeText, offsetRow)
+	 * English: Gets text from the screen that is located above a field identified by a label. It first finds the position of the field using the label, calculates the new row position by subtracting the offsetRow from the original row position, and then retrieves the text starting from that new position for a specified number of characters. The method assumes that the position is based on 1 (the first row and column are considered as 1) and that the sizeText does not exceed the line length from the original column. It throws an exception if the label is not found on the screen.
+	 * Example: if the screen contains "Username: user123" on line 5, and you want to get the text located 2 rows above starting from the same column with a size of 10, you would call getTextTopField("Username:", 10, 2) and it would return the text located at that position.
+	 * @param field The text of the label that identifies the input field
+	 * @param sizeText The number of characters to be obtained starting from the calculated position above the field
+	 * @param offsetRow The number of rows to offset from the original field position (positive for down, negative for up)
+	 * @return The text obtained from the screen based on the calculated position above the field and size specified
+	 * @throws S3270EmulatorException if the label is not found on the screen
+	 */
+	public String getTextTopField(String field, int sizeText, int offsetRow) {
+		logger.info("Getting text from the screen above field '{}' with size {} and row offset {}", field, sizeText, offsetRow);
+		CursorPosition position;
+		Optional<CursorPosition> posOpt = getPositionField(asciiScreen(), field);
+		if(posOpt.isPresent()) 
+			position = posOpt.get();
+		else
+			throw new S3270EmulatorException("Field '" + field + "' not found in screen.");
+		int newRow = Math.abs(position.getRow() - offsetRow);
+		int newCol = Math.abs((position.getCol() - 1) - field.length());
+		return getText(new CursorPosition(newRow, newCol), sizeText);
+	}
+	
 
 }
