@@ -17,7 +17,7 @@ import com.github.marcosws.mf3270.enums.PAKey;
 import com.github.marcosws.mf3270.enums.PFKey;
 import com.github.marcosws.mf3270.enums.WaitType;
 import com.github.marcosws.mf3270.exceptions.S3270EmulatorException;
-import com.github.marcosws.mf3270.utils.CursorPosition;
+import com.github.marcosws.mf3270.utils.component.CursorPosition;
 
 /**
  * Unit tests for S3270Emulator class using JUnit 5 and Mockito.
@@ -132,12 +132,13 @@ class S3270EmulatorTest {
 		when(mockSession.sendCommand("Ascii()")).thenReturn(screen);
 		when(mockSession.sendCommand(startsWith("MoveCursor"))).thenReturn("ok\n");
 		when(mockSession.sendCommand(startsWith("String("))).thenReturn("ok\n");
-		
+
 		String result = emulator.sendTextByField("Username:", "admin");
-		
+
 		assertNotNull(result);
-		verify(mockSession).sendCommand("Ascii()");
-		verify(mockSession, atLeastOnce()).sendCommand(anyString());
+		verify(mockSession, times(4)).sendCommand("Ascii()");
+		verify(mockSession, atLeastOnce()).sendCommand(startsWith("MoveCursor"));
+		verify(mockSession, atLeastOnce()).sendCommand(startsWith("String("));
 	}
 	
 	@Test
@@ -175,6 +176,7 @@ class S3270EmulatorTest {
 	@DisplayName("moveCursor should send MoveCursor command with row and col")
 	void testMoveCursor() {
 		when(mockSession.sendCommand("MoveCursor(5,10)")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.moveCursor(5, 10);
 		
@@ -187,6 +189,7 @@ class S3270EmulatorTest {
 	void testMoveCursorWithPosition() {
 		CursorPosition position = new CursorPosition(10, 20);
 		when(mockSession.sendCommand("MoveCursor(10,20)")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.moveCursor(position);
 		
@@ -200,6 +203,7 @@ class S3270EmulatorTest {
 	@DisplayName("sendString should send String command with text")
 	void testSendString() {
 		when(mockSession.sendCommand("String(\"hello\")")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.sendString("hello");
 		
@@ -212,6 +216,7 @@ class S3270EmulatorTest {
 	void testMoveAndSendString() {
 		when(mockSession.sendCommand(startsWith("MoveCursor"))).thenReturn("ok\n");
 		when(mockSession.sendCommand(startsWith("String("))).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.moveAndSendString(5, 10, "test");
 		
@@ -225,6 +230,7 @@ class S3270EmulatorTest {
 	@DisplayName("enter should send Enter command")
 	void testEnter() {
 		when(mockSession.sendCommand("Enter")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.enter();
 		
@@ -236,6 +242,7 @@ class S3270EmulatorTest {
 	@DisplayName("tab should send Tab command")
 	void testTab() {
 		when(mockSession.sendCommand("Tab()")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.tab();
 		
@@ -247,6 +254,7 @@ class S3270EmulatorTest {
 	@DisplayName("home should send Home command")
 	void testHome() {
 		when(mockSession.sendCommand("Home()")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.home();
 		
@@ -258,6 +266,7 @@ class S3270EmulatorTest {
 	@DisplayName("backspace should send Backspace command")
 	void testBackspace() {
 		when(mockSession.sendCommand("Backspace()")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.backspace();
 		
@@ -269,6 +278,7 @@ class S3270EmulatorTest {
 	@DisplayName("deleteField should send DeleteField command")
 	void testDeleteField() {
 		when(mockSession.sendCommand("DeleteField")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.deleteField();
 		
@@ -280,6 +290,7 @@ class S3270EmulatorTest {
 	@DisplayName("eraseEOF should send EraseEOF command")
 	void testEraseEOF() {
 		when(mockSession.sendCommand("EraseEOF")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.eraseEOF();
 		
@@ -291,6 +302,7 @@ class S3270EmulatorTest {
 	@DisplayName("eraseInput should send EraseInput command")
 	void testEraseInput() {
 		when(mockSession.sendCommand("EraseInput")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.eraseInput();
 		
@@ -302,6 +314,7 @@ class S3270EmulatorTest {
 	@DisplayName("reset should send Reset command")
 	void testReset() {
 		when(mockSession.sendCommand("Reset")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.reset();
 		
@@ -313,6 +326,7 @@ class S3270EmulatorTest {
 	@DisplayName("clear should send Clear command")
 	void testClear() {
 		when(mockSession.sendCommand("Clear()")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.clear();
 		
@@ -326,6 +340,7 @@ class S3270EmulatorTest {
 	@DisplayName("pressPF should send PF command with correct key number")
 	void testPressPF() {
 		when(mockSession.sendCommand("PF(1)")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.pressPF(PFKey.PF1);
 		
@@ -338,6 +353,7 @@ class S3270EmulatorTest {
 	void testPressPFDifferentKeys() {
 		when(mockSession.sendCommand("PF(3)")).thenReturn("ok\n");
 		when(mockSession.sendCommand("PF(12)")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		emulator.pressPF(PFKey.PF3);
 		emulator.pressPF(PFKey.PF12);
@@ -350,6 +366,7 @@ class S3270EmulatorTest {
 	@DisplayName("pressPA should send PA command with correct key number")
 	void testPressPA() {
 		when(mockSession.sendCommand("PA(1)")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.pressPA(PAKey.PA1);
 		
@@ -363,6 +380,7 @@ class S3270EmulatorTest {
 	@DisplayName("waitFor with WaitType should send Wait command with default timeout")
 	void testWaitForWithType() {
 		when(mockSession.sendCommand(eq("Wait(Unlock)"), eq(30000))).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.waitFor(WaitType.UNLOCK);
 		
@@ -374,6 +392,7 @@ class S3270EmulatorTest {
 	@DisplayName("waitFor with WaitType and int seconds should send Wait command")
 	void testWaitForWithTypeAndSeconds() {
 		when(mockSession.sendCommand("Wait(10,Unlock)")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.waitFor(WaitType.UNLOCK, 10);
 		
@@ -385,6 +404,7 @@ class S3270EmulatorTest {
 	@DisplayName("waitFor with WaitType and long seconds should send Wait command")
 	void testWaitForWithTypeAndLongSeconds() {
 		when(mockSession.sendCommand("Wait(20,InputField)")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.waitFor(WaitType.INPUT_FIELD, 20L);
 		
@@ -396,6 +416,7 @@ class S3270EmulatorTest {
 	@DisplayName("waitSeconds with int should send Wait command with Seconds")
 	void testWaitSecondsInt() {
 		when(mockSession.sendCommand("Wait(5,Seconds)")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.waitSeconds(5);
 		
@@ -407,6 +428,7 @@ class S3270EmulatorTest {
 	@DisplayName("waitSeconds with long should send Wait command with Seconds")
 	void testWaitSecondsLong() {
 		when(mockSession.sendCommand("Wait(10,Seconds)")).thenReturn("ok\n");
+		when(mockSession.sendCommand("Ascii()")).thenReturn("ok\n");
 		
 		String result = emulator.waitSeconds(10L);
 		

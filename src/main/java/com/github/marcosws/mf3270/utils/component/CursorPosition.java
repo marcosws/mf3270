@@ -1,4 +1,4 @@
-package com.github.marcosws.mf3270.utils;
+package com.github.marcosws.mf3270.utils.component;
 
 /**
  * Represents the position of the cursor on the 3270 screen.

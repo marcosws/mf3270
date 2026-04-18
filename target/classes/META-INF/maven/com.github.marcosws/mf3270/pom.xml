@@ -4,7 +4,7 @@
 
   <groupId>com.github.marcosws</groupId>
   <artifactId>mf3270</artifactId>
-  <version>0.2</version>
+  <version>0.3</version>
   <packaging>jar</packaging>
 
   <name>mf3270</name>
@@ -31,7 +31,7 @@
       <artifactId>slf4j-api</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
-  
+    
 	<!-- Source: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
 	<dependency>
 	    <groupId>org.junit.jupiter</groupId>
