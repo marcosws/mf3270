@@ -5,6 +5,8 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.marcosws.mf3270.exceptions.S3270SessionException;
+import com.github.marcosws.mf3270.utils.IControlListener;
+
 
 /**
  * S3270Session class manages a session with the s3270 terminal emulator.
@@ -36,6 +40,13 @@ public class S3270Session implements AutoCloseable {
 	private BufferedReader reader;
 	private ExecutorService executor;
 	
+	
+    private List<IControlListener> listeners = new ArrayList<>();
+
+    public void addCloseListener(IControlListener listener) {
+    	listeners.add(listener);
+    }
+    
 	public S3270Session() {
 		logger.info("Initializing s3270 session");
         executor = Executors.newSingleThreadExecutor();
@@ -81,6 +92,9 @@ public class S3270Session implements AutoCloseable {
 		}
 	    finally {
 	    	logger.info("Shutting down executor service");
+	        for (IControlListener l : listeners) {
+	            l.onClose();
+	        }
 	        executor.shutdownNow(); // Fecha o executor para evitar vazamento de threads
 	    }
 	}
@@ -127,7 +141,8 @@ public class S3270Session implements AutoCloseable {
 		writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
 		reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 		
-		return sendCommand("connect(" + host + ":" + port + ")");
+		String command = sendCommand("connect(" + host + ":" + port + ")");
+        return command;
 	}
     
     /**

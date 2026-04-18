@@ -6,11 +6,15 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.marcosws.mf3270.enums.EmulatorMode;
 import com.github.marcosws.mf3270.enums.PAKey;
 import com.github.marcosws.mf3270.enums.PFKey;
 import com.github.marcosws.mf3270.enums.WaitType;
 import com.github.marcosws.mf3270.exceptions.S3270EmulatorException;
-import com.github.marcosws.mf3270.utils.CursorPosition;
+import com.github.marcosws.mf3270.utils.IControlListener;
+import com.github.marcosws.mf3270.utils.component.CursorPosition;
+import com.github.marcosws.mf3270.utils.component.ScreenContent;
+import com.github.marcosws.mf3270.utils.viewer.ManagerViewerContent;
 
 /**
  * 3270Emulator is a class that provides high-level methods to interact with a 3270 terminal session. It uses an instance of S3270Session to send commands and receive responses from the host. The class includes methods to get the current screen in ASCII format, find the position of fields based on labels, send text to specific fields, and perform various actions like moving the cursor, pressing keys, and waiting for events. It abstracts the low-level details of communicating with the 3270 terminal and provides a more user-friendly interface for automation tasks.
@@ -18,15 +22,25 @@ import com.github.marcosws.mf3270.utils.CursorPosition;
  * @version 1.0
  * @since 2026-04
  */
-public class S3270Emulator {
+public class S3270Emulator extends ManagerViewerContent implements IControlListener{
 	
 	private static final Logger logger = LoggerFactory.getLogger(S3270Emulator.class);
 	
 	private S3270Session session;
-	
+
 	public S3270Emulator(S3270Session session) {
+		super(EmulatorMode.HEADLESS_ONLY);
 		logger.info("Initializing S3270Emulator with provided session");
 		this.session = session;
+		this.session.addCloseListener(this);
+	}
+	
+	public S3270Emulator(S3270Session session, EmulatorMode emulatorMode) {
+		super(emulatorMode);
+		logger.info("Initializing S3270Emulator with provided session");
+		this.session = session;
+		this.session.addCloseListener(this);
+		this.showViewer();
 	}
 	
 	public S3270Session getSession() {
@@ -67,6 +81,7 @@ public class S3270Emulator {
 		    }
 		    sleep(150); 
 		}
+		this.updateScreenViewer();
 	    return rawScreen;
 		
 	}
@@ -206,7 +221,9 @@ public class S3270Emulator {
 	 */
 	public String waitFor(WaitType waitType) {
 		logger.info("Waiting for event of type '{}'", waitType.getValue());
-		return session.sendCommand("Wait(" + waitType.getValue() + ")", 30000); // espera até 30 segundos por padrão
+		String command = session.sendCommand("Wait(" + waitType.getValue() + ")", 30000); // espera até 30 segundos por padrão
+		this.updateScreenViewer();
+		return command;
 	}
 	
 	/**
@@ -222,7 +239,9 @@ public class S3270Emulator {
 	 */
 	public String waitFor(WaitType waitType, int seconds) {
 		logger.info("Waiting for event of type '{}' with timeout of {} seconds", waitType.getValue(), seconds);
-		return session.sendCommand("Wait(" + seconds + "," + waitType.getValue() + ")");
+		String command = session.sendCommand("Wait(" + seconds + "," + waitType.getValue() + ")");
+		this.updateScreenViewer();
+		return command;
 	}
 	
 	/**
@@ -238,7 +257,10 @@ public class S3270Emulator {
 	 */
 	public String waitFor(WaitType waitType, long seconds) {
 		logger.info("Waiting for event of type '{}' with timeout of {} seconds", waitType.getValue(), seconds);
-		return session.sendCommand("Wait(" + seconds + "," + waitType.getValue() + ")");
+		String command = session.sendCommand("Wait(" + seconds + "," + waitType.getValue() + ")");
+		this.updateScreenViewer();
+		return command;
+		
 	}
 	
 	/**
@@ -252,7 +274,9 @@ public class S3270Emulator {
 	 */
 	public String waitSeconds(long seconds) {
 		logger.info("Waiting for {} seconds", seconds);
-		return session.sendCommand("Wait(" + seconds + ",Seconds)");
+		String command = session.sendCommand("Wait(" + seconds + ",Seconds)");
+		this.updateScreenViewer();
+		return command;
 	}
 	
 	/**
@@ -266,7 +290,9 @@ public class S3270Emulator {
 	 */
 	public String waitSeconds(int seconds) {
 		logger.info("Waiting for {} seconds", seconds);
-		return session.sendCommand("Wait(" + seconds + ",Seconds)");
+		String command =  session.sendCommand("Wait(" + seconds + ",Seconds)");
+		this.updateScreenViewer();
+		return command;
 	}
 	
 	/**
@@ -300,7 +326,9 @@ public class S3270Emulator {
 	 */
 	public String moveCursor(int row, int col) {
 		logger.info("Moving cursor to position (row: {}, col: {})", row, col);
-		return session.sendCommand("MoveCursor(" + row + "," + col + ")");
+		String command = session.sendCommand("MoveCursor(" + row + "," + col + ")");
+		this.updateScreenViewer();
+		return command;
 	}
 	
 	/**
@@ -314,7 +342,9 @@ public class S3270Emulator {
 	 */
 	public String moveCursor(CursorPosition position) {
 		logger.info("Moving cursor to position (row: {}, col: {})", position.getRow(), position.getCol());
-		return session.sendCommand("MoveCursor(" + position.getRow() + "," + position.getCol() + ")");
+		String command = session.sendCommand("MoveCursor(" + position.getRow() + "," + position.getCol() + ")");
+		this.updateScreenViewer();
+		return command;
 	}
 		
 	/**
@@ -324,7 +354,9 @@ public class S3270Emulator {
 	*/
 	public String tab() {
 		logger.info("Moving cursor to the next editable field using Tab()");
-		return session.sendCommand("Tab()");
+		String command =  session.sendCommand("Tab()");
+		this.updateScreenViewer();
+		return command;
 	}
 		
 	/**
@@ -334,7 +366,9 @@ public class S3270Emulator {
 	*/
 	public String home() {
 		logger.info("Moving cursor to the first position of the screen using Home()");
-		return session.sendCommand("Home()");
+		String command = session.sendCommand("Home()");
+		this.updateScreenViewer();
+		return command;
 	}
 		
 	/**
@@ -345,7 +379,9 @@ public class S3270Emulator {
 	*/
 	public String sendString(String text) {
 		logger.info("Sending text '{}' at the current cursor position", text);
-		return session.sendCommand("String(\"" + text + "\")");
+		String command = session.sendCommand("String(\"" + text + "\")");
+		this.updateScreenViewer();
+		return command;
 	}
 	
 	/**
@@ -355,7 +391,9 @@ public class S3270Emulator {
 	 */
 	public String deleteField() {
 		logger.info("Deleting the content of the current field using DeleteField()");
-		return session.sendCommand("DeleteField");
+		String command = session.sendCommand("DeleteField");
+		this.updateScreenViewer();
+		return command;
 	}
 		
 	/**
@@ -365,7 +403,9 @@ public class S3270Emulator {
 	*/
 	public String eraseEOF() {
 		logger.info("Erasing from the current position to the end of the line using EraseEOF()");
-		return session.sendCommand("EraseEOF");
+		String command = session.sendCommand("EraseEOF");
+		this.updateScreenViewer();
+		return command;
 	}
 	
 	/**
@@ -375,7 +415,9 @@ public class S3270Emulator {
 	 */
 	public String eraseInput() {
 		logger.info("Erasing from the current position to the end of the field using EraseInput()");
-		return session.sendCommand("EraseInput");
+		String command = session.sendCommand("EraseInput");
+		this.updateScreenViewer();
+		return command;
 	}
 	
 	/**
@@ -385,7 +427,9 @@ public class S3270Emulator {
 	 */
 	public String reset() {
 		logger.info("Resetting the screen using Reset()");
-		return session.sendCommand("Reset");
+		String command = session.sendCommand("Reset");
+		this.updateScreenViewer();
+		return command;
 	}
 		
 	/**
@@ -395,7 +439,9 @@ public class S3270Emulator {
 	 */
 	public String enter() {
 		logger.info("Pressing the Enter key using Enter()");
-		return session.sendCommand("Enter");
+		String command = session.sendCommand("Enter");
+		this.updateScreenViewer();
+		return command;
 	}
 		
 	/**
@@ -406,7 +452,9 @@ public class S3270Emulator {
 	*/
 	public String pressPF(PFKey pfKey) {
 		logger.info("Pressing the PF{} key using PF({})", pfKey.getValue(), pfKey.getValue());
-		return session.sendCommand("PF(" + pfKey.getValue() + ")");
+		String command = session.sendCommand("PF(" + pfKey.getValue() + ")");
+		this.updateScreenViewer();
+		return command;
 	}
 		
 	/**
@@ -417,7 +465,9 @@ public class S3270Emulator {
 	 */
 	public String pressPA(PAKey paKey) {
 		logger.info("Pressing the PA{} key using PA({})", paKey.getValue(), paKey.getValue());
-		return session.sendCommand("PA(" + paKey.getValue() + ")");
+		String command = session.sendCommand("PA(" + paKey.getValue() + ")");
+		this.updateScreenViewer();
+		return command;
 	}
 		
 	/**
@@ -427,7 +477,9 @@ public class S3270Emulator {
 	 */ 
 	public String clear() {
 		logger.info("Clearing the entire screen using Clear()");
-		return session.sendCommand("Clear()");
+		String command = session.sendCommand("Clear()");
+		this.updateScreenViewer();
+		return command;
 	}
 		
 	/**
@@ -437,7 +489,9 @@ public class S3270Emulator {
 	*/
 	public String backspace() {
 		logger.info("Pressing the Backspace key using Backspace()");
-		return session.sendCommand("Backspace()");
+		String command = session.sendCommand("Backspace()");
+		this.updateScreenViewer();
+		return command;
 	}
 		
 	/**
@@ -476,6 +530,7 @@ public class S3270Emulator {
 				field = line.substring(position.getCol(), position.getCol() + sizeText);
 			}
 		}
+		this.updateScreenViewer();
 		return field;
 	}
 	
@@ -566,6 +621,17 @@ public class S3270Emulator {
 		int newCol = Math.abs((position.getCol() - 1) - field.length());
 		return getText(new CursorPosition(newRow, newCol), sizeText);
 	}
+
+	@Override
+	public ScreenContent getScreenContent() {
+		ScreenContent screenContent = new ScreenContent();
+		screenContent.setScreen(getScreen());
+		return screenContent;
+	}
 	
+    @Override
+    public void onClose() {
+        this.closeViewer();
+    }
 
 }
