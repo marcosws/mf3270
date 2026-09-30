@@ -13,11 +13,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.github.marcosws.mf3270.components.CursorPosition;
 import com.github.marcosws.mf3270.enums.PAKey;
 import com.github.marcosws.mf3270.enums.PFKey;
 import com.github.marcosws.mf3270.enums.WaitType;
 import com.github.marcosws.mf3270.exceptions.S3270EmulatorException;
-import com.github.marcosws.mf3270.utils.component.CursorPosition;
 
 /**
  * Unit tests for S3270Emulator class using JUnit 5 and Mockito.
@@ -66,7 +66,7 @@ class S3270EmulatorTest {
 		String rawResponse = "data: line1\ndata: line2\ndata: line3\nok\n";
 		when(mockSession.sendCommand("Ascii()")).thenReturn(rawResponse);
 		
-		String result = emulator.getScreen();
+		String result = emulator.getScreen().getContent();
 		
 		assertNotNull(result);
 		verify(mockSession).sendCommand("Ascii()");

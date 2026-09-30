@@ -1,10 +1,11 @@
-package com.github.marcosws.mf3270.utils.viewer;
+package com.github.marcosws.mf3270.viewer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.marcosws.mf3270.components.ScreenContent;
 import com.github.marcosws.mf3270.enums.EmulatorMode;
-import com.github.marcosws.mf3270.utils.component.ScreenContent;
+import com.github.marcosws.mf3270.interfaces.IScreenContent;
 
 public abstract class ManagerViewerContent implements IScreenContent {
 	
@@ -22,7 +23,7 @@ public abstract class ManagerViewerContent implements IScreenContent {
 	}
 	
 	protected void showViewer() {
-		if (emulatorMode == EmulatorMode.TERMINAL_VIEWER || emulatorMode == EmulatorMode.TERMINAL_VIEWER_WITH_LOG_DEBUG) {
+		if (emulatorMode == EmulatorMode.VIEWER_MODE) {
 			terminalViewer = new TerminalViewer();
 			terminalViewer.show();
 		}
@@ -32,17 +33,13 @@ public abstract class ManagerViewerContent implements IScreenContent {
 		
 		ScreenContent screenContent = this.getScreenContent();
 		switch (emulatorMode) {
-			case HEADLESS_WITH_LOG_DEBUG:
-				logger.debug("Current screen:\n{}", screenContent.getScreen());
+			case HEADLESS_MODE:
+				logger.debug("Current screen:\n{}", screenContent.getContent());
 				break;
-			case TERMINAL_VIEWER_WITH_LOG_DEBUG:
-				logger.debug("Current screen:\n{}", screenContent.getScreen());
-				 // Intencionalmente sem break para reutilizar a lógica de atualização do Terminal Viewer
-			case TERMINAL_VIEWER:
-				this.terminalViewer.updateScreen(screenContent.getScreen());
+			case VIEWER_MODE:
+				logger.debug("Current screen:\n{}", screenContent.getContent());
+				this.terminalViewer.updateScreen(screenContent.getContent());
 				break;
-			case HEADLESS_ONLY:
-				return;
 			default:
 				throw new IllegalArgumentException("Modo de emulador desconhecido: " + emulatorMode);
 		}

@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.marcosws.mf3270.exceptions.S3270SessionException;
-import com.github.marcosws.mf3270.utils.IControlListener;
+import com.github.marcosws.mf3270.interfaces.IControlListener;
 
 
 /**
