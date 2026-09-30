@@ -6,15 +6,15 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.marcosws.mf3270.components.CursorPosition;
+import com.github.marcosws.mf3270.components.ScreenContent;
 import com.github.marcosws.mf3270.enums.EmulatorMode;
 import com.github.marcosws.mf3270.enums.PAKey;
 import com.github.marcosws.mf3270.enums.PFKey;
 import com.github.marcosws.mf3270.enums.WaitType;
 import com.github.marcosws.mf3270.exceptions.S3270EmulatorException;
-import com.github.marcosws.mf3270.utils.IControlListener;
-import com.github.marcosws.mf3270.utils.component.CursorPosition;
-import com.github.marcosws.mf3270.utils.component.ScreenContent;
-import com.github.marcosws.mf3270.utils.viewer.ManagerViewerContent;
+import com.github.marcosws.mf3270.interfaces.IControlListener;
+import com.github.marcosws.mf3270.viewer.ManagerViewerContent;
 
 /**
  * 3270Emulator is a class that provides high-level methods to interact with a 3270 terminal session. It uses an instance of S3270Session to send commands and receive responses from the host. The class includes methods to get the current screen in ASCII format, find the position of fields based on labels, send text to specific fields, and perform various actions like moving the cursor, pressing keys, and waiting for events. It abstracts the low-level details of communicating with the 3270 terminal and provides a more user-friendly interface for automation tasks.
@@ -29,7 +29,7 @@ public class S3270Emulator extends ManagerViewerContent implements IControlListe
 	private S3270Session session;
 
 	public S3270Emulator(S3270Session session) {
-		super(EmulatorMode.HEADLESS_ONLY);
+		super(EmulatorMode.HEADLESS_MODE);
 		logger.info("Initializing S3270Emulator with provided session");
 		this.session = session;
 		this.session.addCloseListener(this);
@@ -92,7 +92,7 @@ public class S3270Emulator extends ManagerViewerContent implements IControlListe
 	 * assumes that the screen will be available immediately and may contain valid data. It sends the "Ascii()" command and processes the response in the same way, removing lines that start with "data:" and the last 2 control lines.
 	 * @return Current screen from the host in ASCII format, without control lines
 	 */
-	public String getScreen() {
+	public ScreenContent getScreen() {
 		
 		logger.info("Getting ASCII screen from the host without retry mechanism");
 		StringBuilder screen = new StringBuilder();
@@ -104,7 +104,8 @@ public class S3270Emulator extends ManagerViewerContent implements IControlListe
 	        screen.append(line.replace("data:", "")).append("\n");
 
 	    }
-	    return screen.toString();
+	    
+	    return new ScreenContent(screen.toString());
 		
 	}
 	    
@@ -131,6 +132,17 @@ public class S3270Emulator extends ManagerViewerContent implements IControlListe
 	    }
 
 	    return Optional.empty();
+	}
+	
+	/**
+	 * Overloaded method to find the position of a field on the screen using a ScreenContent object. It extracts the content from the ScreenContent object and calls the getPositionField method that takes a string as input. This method provides a convenient way to find field positions when working with ScreenContent objects.
+	 * @param screen A ScreenContent object representing the current screen from the host
+	 * @param field The text of the label that identifies the input field
+	 * @return An Optional containing the position of the field as CursorPosition if found, or
+	 * Optional.empty() if not found
+	 */
+	public Optional<CursorPosition> getPositionField(ScreenContent screen, String field) {
+		return getPositionField(screen.getContent(), field);
 	}
 	
 	/**
@@ -624,9 +636,7 @@ public class S3270Emulator extends ManagerViewerContent implements IControlListe
 
 	@Override
 	public ScreenContent getScreenContent() {
-		ScreenContent screenContent = new ScreenContent();
-		screenContent.setScreen(getScreen());
-		return screenContent;
+		return getScreen();
 	}
 	
     @Override
