@@ -7,11 +7,16 @@ public class TerminalViewer {
 
     private JFrame frame;
     private JTextArea area;
+    private JButton continueButton;
 
     private String ultimaTela = "";
 
-    public TerminalViewer() {
+    public TerminalViewer(Runnable onContinue) {
         frame = new JFrame("Terminal 3270 Viewer");
+        
+        continueButton = new JButton("Continue");
+        continueButton.setEnabled(false);
+        continueButton.addActionListener(event -> onContinue.run());
 
         area = new JTextArea(28, 84);
         area.setFont(new Font("Monospaced", Font.PLAIN, 14));
@@ -19,14 +24,13 @@ public class TerminalViewer {
         area.setFocusable(false);
         area.setBackground(Color.BLACK);
         area.setForeground(Color.GREEN);
-        // simular o terminal real, mas o JScrollPane já cuida do tamanho
-        //area.setRows(24);
-        //area.setColumns(80);
-        //area.setLineWrap(false);
 
         JScrollPane scroll = new JScrollPane(area);
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topPanel.add(continueButton);
 
-        frame.add(scroll);
+        frame.add(topPanel, BorderLayout.NORTH);
+        frame.add(scroll, BorderLayout.CENTER);
         frame.pack();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
@@ -50,6 +54,10 @@ public class TerminalViewer {
             area.setText(tela);
             area.setCaretPosition(0); // mantém topo visível
         });
+    }
+    
+    public void setContinueEnabled(boolean enabled) {
+    	SwingUtilities.invokeLater(() -> continueButton.setEnabled(enabled));
     }
     
     public void close() {

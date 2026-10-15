@@ -48,6 +48,12 @@ public class S3270Emulator extends ManagerViewerContent implements IControlListe
 		return session;
 	}
 	
+	public void pauseScript() {
+		logger.info("Pausing script execution");
+		pauseScreenViewer();
+	}
+	
+	
 	/**
 	 * Gets the current screen from the host in ASCII format, removing control lines.
 	 * Sends the "Ascii()" command and reads the response until it finds "ok". Returns the screen as a string, removing lines that start with "data:" and the last 2 control lines.
