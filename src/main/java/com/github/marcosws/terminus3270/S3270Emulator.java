@@ -1,4 +1,4 @@
-package com.github.marcosws.mf3270;
+package com.github.marcosws.terminus3270;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -6,15 +6,15 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.marcosws.mf3270.components.CursorPosition;
-import com.github.marcosws.mf3270.components.ScreenContent;
-import com.github.marcosws.mf3270.enums.EmulatorMode;
-import com.github.marcosws.mf3270.enums.PAKey;
-import com.github.marcosws.mf3270.enums.PFKey;
-import com.github.marcosws.mf3270.enums.WaitType;
-import com.github.marcosws.mf3270.exceptions.S3270EmulatorException;
-import com.github.marcosws.mf3270.interfaces.IControlListener;
-import com.github.marcosws.mf3270.viewer.ManagerViewerContent;
+import com.github.marcosws.terminus3270.components.CursorPosition;
+import com.github.marcosws.terminus3270.components.ScreenContent;
+import com.github.marcosws.terminus3270.enums.EmulatorMode;
+import com.github.marcosws.terminus3270.enums.PAKey;
+import com.github.marcosws.terminus3270.enums.PFKey;
+import com.github.marcosws.terminus3270.enums.WaitType;
+import com.github.marcosws.terminus3270.exceptions.S3270EmulatorException;
+import com.github.marcosws.terminus3270.interfaces.IControlListener;
+import com.github.marcosws.terminus3270.viewer.ManagerViewerContent;
 
 /**
  * 3270Emulator is a class that provides high-level methods to interact with a 3270 terminal session. It uses an instance of S3270Session to send commands and receive responses from the host. The class includes methods to get the current screen in ASCII format, find the position of fields based on labels, send text to specific fields, and perform various actions like moving the cursor, pressing keys, and waiting for events. It abstracts the low-level details of communicating with the 3270 terminal and provides a more user-friendly interface for automation tasks.

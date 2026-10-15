@@ -1,4 +1,4 @@
-package com.github.marcosws.mf3270.viewer;
+package com.github.marcosws.terminus3270.viewer;
 
 import javax.swing.*;
 import java.awt.*;

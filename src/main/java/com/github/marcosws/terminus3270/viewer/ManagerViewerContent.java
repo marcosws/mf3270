@@ -1,11 +1,11 @@
-package com.github.marcosws.mf3270.viewer;
+package com.github.marcosws.terminus3270.viewer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.marcosws.mf3270.components.ScreenContent;
-import com.github.marcosws.mf3270.enums.EmulatorMode;
-import com.github.marcosws.mf3270.interfaces.IScreenContent;
+import com.github.marcosws.terminus3270.components.ScreenContent;
+import com.github.marcosws.terminus3270.enums.EmulatorMode;
+import com.github.marcosws.terminus3270.interfaces.IScreenContent;
 
 public abstract class ManagerViewerContent implements IScreenContent {
 	

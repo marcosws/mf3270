@@ -1,4 +1,4 @@
-package com.github.marcosws.mf3270.interfaces;
+package com.github.marcosws.terminus3270.interfaces;
 
 public interface IControlListener {
     void onClose();

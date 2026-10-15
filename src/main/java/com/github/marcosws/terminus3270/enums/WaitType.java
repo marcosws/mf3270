@@ -1,4 +1,4 @@
-package com.github.marcosws.mf3270.enums;
+package com.github.marcosws.terminus3270.enums;
 
 /**
  * Enum representing the different wait types that can be used in 3270 terminal sessions.
