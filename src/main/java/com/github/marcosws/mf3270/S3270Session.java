@@ -7,12 +7,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +37,9 @@ public class S3270Session implements AutoCloseable {
 	
 	private static final Logger logger = LoggerFactory.getLogger(S3270Session.class);
 	
+    private final List<String> command;
+    private final Map<String, String> environment;
+	
 	private Process process;
 	private BufferedWriter writer;
 	private BufferedReader reader;
@@ -48,6 +53,15 @@ public class S3270Session implements AutoCloseable {
     }
     
 	public S3270Session() {
+		this(List.of("s3270"), Map.of());
+		logger.info("Initializing s3270 session");
+        executor = Executors.newSingleThreadExecutor();
+	}
+	
+	
+	public S3270Session(List<String> command, Map<String, String> environment) {
+        this.command = List.copyOf(command);
+        this.environment = Map.copyOf(environment);
 		logger.info("Initializing s3270 session");
         executor = Executors.newSingleThreadExecutor();
 	}
@@ -57,10 +71,15 @@ public class S3270Session implements AutoCloseable {
 	 * @return The response from the s3270 process after sending the "Quit" command.
 	 */
 	public String quit() {
-		logger.info("Quitting s3270 session");
-		String returnCommand = sendCommand("Quit");
-		close();
-		return returnCommand;
+	    logger.info("Quitting s3270 session");
+	    try {
+	        return sendCommand("Quit");
+	    } catch (S3270SessionException e) {
+	        logger.debug("s3270 closed the stream after Quit (expected)", e);
+	        return "";
+	    } finally {
+	        close();
+	    }
 	}
 	/**
 	 * Closes the s3270 session by closing the I/O streams and destroying the process
@@ -129,7 +148,8 @@ public class S3270Session implements AutoCloseable {
 		
 		logger.info("Connecting to s3270 session at {}:{}", host, port);
 		ProcessBuilder processBuilder = null;
-		processBuilder = new ProcessBuilder("s3270");
+		processBuilder = new ProcessBuilder(command);
+		processBuilder.environment().putAll(environment);
 		processBuilder.redirectErrorStream(true);
 		try {
 			process = processBuilder.start();
@@ -169,24 +189,7 @@ public class S3270Session implements AutoCloseable {
     public boolean isConnected() {
 		logger.info("Checking if s3270 session is connected");
 		checkSession();
-		
-		try {
-						
-			writer.write("Query(ConnectionState)");
-			writer.newLine();
-			writer.flush();
-							
-			StringBuilder screen = new StringBuilder();
-			String line;
-			while ((line = reader.readLine()) != null) {
-				if (line.contains("ok")) break;
-					screen.append(line).append("\n");
-			}
-			return screen.toString().contains("connected-3270");
-		}
-		catch (IOException e) {
-			throw new S3270SessionException("Error checking connection state", e);
-		}
+		return sendCommand("Query(ConnectionState)").contains("connected-3270");
 	}
 	
     public String sendCommand(String command) {
@@ -270,6 +273,7 @@ public class S3270Session implements AutoCloseable {
 	    catch (TimeoutException e) {
 	    	logger.error("Timeout reached for command: {} (timeout: {} ms)", command, timeoutMillis, e);
 	        future.cancel(true);
+	        close();   // derruba o processo; o readLine() preso termina com EOF
 	        throw new S3270SessionException("Timeout reached for command: " + command);
 	    } 
 	    catch (ExecutionException e) {
