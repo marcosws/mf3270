@@ -1,4 +1,4 @@
-package com.github.marcosws.mf3270.exceptions;
+package com.github.marcosws.terminus3270.exceptions;
 
 
 /**

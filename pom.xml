@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.github.marcosws</groupId>
-  <artifactId>mf3270</artifactId>
+  <artifactId>terminus3270</artifactId>
   <version>0.4</version>
   <packaging>jar</packaging>
 
-  <name>mf3270</name>
+  <name>terminus3270</name>
   <url>http://maven.apache.org</url>
   <!-- 
 	  <name>mf3270</name>

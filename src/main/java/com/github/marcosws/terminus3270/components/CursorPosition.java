@@ -1,4 +1,4 @@
-package com.github.marcosws.mf3270.components;
+package com.github.marcosws.terminus3270.components;
 
 /**
  * Represents the position of the cursor on the 3270 screen.

@@ -1,4 +1,4 @@
-package com.github.marcosws.mf3270;
+package com.github.marcosws.terminus3270;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -19,8 +19,8 @@ import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.marcosws.mf3270.exceptions.S3270SessionException;
-import com.github.marcosws.mf3270.interfaces.IControlListener;
+import com.github.marcosws.terminus3270.exceptions.S3270SessionException;
+import com.github.marcosws.terminus3270.interfaces.IControlListener;
 
 
 /**

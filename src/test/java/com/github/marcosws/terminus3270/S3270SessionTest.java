@@ -1,4 +1,4 @@
-package com.github.marcosws.mf3270;
+package com.github.marcosws.terminus3270;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -15,7 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import com.github.marcosws.mf3270.exceptions.S3270SessionException;
+import com.github.marcosws.terminus3270.exceptions.S3270SessionException;
 
 /**
  * Unit tests for S3270Session class using JUnit 5.

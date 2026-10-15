@@ -1,4 +1,4 @@
-package com.github.marcosws.mf3270;
+package com.github.marcosws.terminus3270;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -13,11 +13,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.github.marcosws.mf3270.components.CursorPosition;
-import com.github.marcosws.mf3270.enums.PAKey;
-import com.github.marcosws.mf3270.enums.PFKey;
-import com.github.marcosws.mf3270.enums.WaitType;
-import com.github.marcosws.mf3270.exceptions.S3270EmulatorException;
+import com.github.marcosws.terminus3270.components.CursorPosition;
+import com.github.marcosws.terminus3270.enums.PAKey;
+import com.github.marcosws.terminus3270.enums.PFKey;
+import com.github.marcosws.terminus3270.enums.WaitType;
+import com.github.marcosws.terminus3270.exceptions.S3270EmulatorException;
 
 /**
  * Unit tests for S3270Emulator class using JUnit 5 and Mockito.
