@@ -10,9 +10,12 @@ import com.github.marcosws.mf3270.interfaces.IScreenContent;
 public abstract class ManagerViewerContent implements IScreenContent {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ManagerViewerContent.class);
-	
+	private final Object pauseLock = new Object();
 	private TerminalViewer terminalViewer;
 	private EmulatorMode emulatorMode;
+	private boolean paused;
+	
+
 	
 	public EmulatorMode getEmulatorMode() {
 		return emulatorMode;
@@ -24,8 +27,36 @@ public abstract class ManagerViewerContent implements IScreenContent {
 	
 	protected void showViewer() {
 		if (emulatorMode == EmulatorMode.VIEWER_MODE) {
-			terminalViewer = new TerminalViewer();
+			terminalViewer = new TerminalViewer(this::continueScreen);
 			terminalViewer.show();
+		}
+	}
+	
+	protected final void pauseScreenViewer() {
+		paused = true;
+		terminalViewer.setContinueEnabled(true);
+		logger.info("Script paused; wainting for Continue in the Terminal Viewer");
+		while(paused) {
+			try {
+				pauseLock.wait();
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				paused  = false;
+				terminalViewer.setContinueEnabled(false);
+				throw new IllegalStateException("Interrupted while wanting for Continue",e);
+			}
+		}
+		
+	}
+	
+	private void continueScreen() {
+		synchronized (pauseLock) {
+			if(!paused) {
+				return;
+			}
+			paused = false;
+			terminalViewer.setContinueEnabled(false);
+			pauseLock.notifyAll();
 		}
 	}
 	
@@ -37,7 +68,7 @@ public abstract class ManagerViewerContent implements IScreenContent {
 				logger.debug("Current screen:\n{}", screenContent.getContent());
 				break;
 			case VIEWER_MODE:
-				logger.debug("Current screen:\n{}", screenContent.getContent());
+				logger.debug("[VIEWER MODE] Current screen:\n{}", screenContent.getContent());
 				this.terminalViewer.updateScreen(screenContent.getContent());
 				break;
 			default:
@@ -47,6 +78,7 @@ public abstract class ManagerViewerContent implements IScreenContent {
 	}
 	
 	protected void closeViewer() {
+		continueScreen();
 		if (terminalViewer != null) {
 			terminalViewer.close();
 			terminalViewer = null;
