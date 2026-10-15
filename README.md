@@ -1,10 +1,16 @@
-# mf3270
+# terminus3270
 
 Biblioteca Java para automação e interação com terminais 3270, utilizando comandos de alto nível para facilitar testes e integrações com sistemas legados.
 
 ## Visão Geral
 
-O projeto **mf3270** fornece uma API orientada a objetos para controlar sessões 3270, encapsulando comandos comuns como navegação, preenchimento de campos, leitura de tela, espera por eventos e manipulação de teclas especiais.
+O projeto **terminus3270** fornece uma API orientada a objetos para controlar sessões 3270, encapsulando comandos comuns como navegação,# terminus3270
+
+Biblioteca Java para automação e interação com terminais 3270, utilizando comandos de alto nível para facilitar testes e integrações com sistemas legados.
+
+## Visão Geral
+
+O projeto **terminus3270** fornece uma API orientada a objetos para controlar sessões 3270, encapsulando comandos comuns como navegação, preenchimento de campos, leitura de tela, espera por eventos e manipulação de teclas especiais.
 
 A classe principal é `S3270Emulator`, que utiliza uma instância de `S3270Session` para comunicação com o terminal.
 
@@ -19,21 +25,41 @@ A classe principal é `S3270Emulator`, que utiliza uma instância de `S3270Sessi
 
 ## Exemplo de Uso
 
+O exemplo a seguir demonstra como usar a biblioteca `terminus3270` para interagir com um terminal 3270:
+
 ```java
-S3270Session session = new S3270Session(...); // inicialização da sessão
-S3270Emulator emulator = new S3270Emulator(session);
+import com.github.marcosws.terminus3270.S3270Emulator;
+import com.github.marcosws.terminus3270.exceptions.S3270SessionException;
 
-// Obter a tela atual
-String tela = emulator.getScreen();
+public class Main {
+    public static void main(String[] args) {
+        try {
+            // Inicializa a sessão 3270
+            S3270Emulator emulator = new S3270Emulator();
 
-// Enviar texto para um campo identificado por label
-emulator.sendTextByField("Username:", "admin");
+            // Conecta ao terminal 3270
+            emulator.connect();
 
-// Pressionar Enter
-emulator.enter();
+            // Envia texto para um campo identificado por label
+            emulator.sendTextByField("Username:", "admin");
 
-// Esperar até que um texto apareça na tela
-emulator.waitForText("Bem-vindo", 5000);
+            // Pressiona Enter
+            emulator.enter();
+
+            // Espera até que um texto apareça na tela
+            if (emulator.waitForText("Bem-vindo", 5000)) {
+                System.out.println("Login realizado com sucesso!");
+            } else {
+                System.out.println("Falha no login.");
+            }
+
+            // Desconecta da sessão 3270
+            emulator.disconnect();
+        } catch (S3270SessionException e) {
+            System.err.println("Erro ao interagir com o terminal 3270: " + e.getMessage());
+        }
+    }
+}
 ```
 
 ## Principais Métodos
@@ -71,8 +97,8 @@ Os testes utilizam JUnit 5 e Mockito para simular sessões e validar o comportam
 
 ## Estrutura do Projeto
 
-- `src/main/java/com/github/marcosws/mf3270/` — Código principal
-- `src/test/java/com/github/marcosws/mf3270/` — Testes unitários
+- `src/main/java/com/github/marcosws/terminus3270/` — Código principal
+- `src/test/java/com/github/marcosws/terminus3270/` — Testes unitários
 
 ## Requisitos
 
@@ -81,4 +107,21 @@ Os testes utilizam JUnit 5 e Mockito para simular sessões e validar o comportam
 
 ## Autor
 
-Marcos Willian de Souza
+Marcos Willian de Souza preenchimento de campos, leitura de tela, espera por eventos e manipulação de teclas especiais.
+
+A classe principal é `S3270Emulator`, que utiliza uma instância de `S3270Session` para comunicação com o terminal.
+
+## Principais Funcionalidades
+
+- Obtenção da tela em formato ASCII
+- Busca de campos por label e envio de texto
+- Movimentação do cursor
+- Pressionamento de teclas especiais (Enter, PF, PA, Tab, etc.)
+- Espera por eventos ou textos específicos na tela
+- Extração de textos de posições ou campos específicos
+
+## Exemplo de Uso
+
+O exemplo a seguir demonstra como usar a biblioteca `terminus3270` para interagir com um terminal 3270:
+
+
