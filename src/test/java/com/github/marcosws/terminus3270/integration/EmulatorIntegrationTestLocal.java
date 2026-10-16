@@ -20,11 +20,11 @@ public class EmulatorIntegrationTestLocal {
 		
 		ConfigFakeS3270.configSetup();
 		
-		
 		String path = System.getProperty("s3270.path");
 		session = new S3270Session(List.of(path), Map.of());
 		emulator = new S3270Emulator(session, EmulatorMode.VIEWER_MODE);
-		session.connect("fake", "23");
+
+		emulator.getSession().connect("fake", "23");
 		
 		System.out.println(emulator.asciiScreen());
 		emulator.pauseScript();
@@ -58,12 +58,12 @@ public class EmulatorIntegrationTestLocal {
 		
 		emulator.enter();
 		
+		
 		System.out.println(emulator.asciiScreen());
 		emulator.pauseScript();
 		
-		
-		session.disconnect();
-	    session.quit();
+		emulator.getSession().disconnect();
+		emulator.getSession().quit();
 		
 	}
 

@@ -2,32 +2,50 @@ package com.github.marcosws.terminus3270.viewer;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 
 public class TerminalViewer {
 
     private JFrame frame;
-    private JTextArea area;
+    private JTextArea areaScreen;
     private JButton continueButton;
+    private JButton copyButton;
 
-    private String ultimaTela = "";
+    private String lastScreen = "";
 
     public TerminalViewer(Runnable onContinue) {
+    	
         frame = new JFrame("Terminal 3270 Viewer");
+        areaScreen = new JTextArea(28, 84);
         
         continueButton = new JButton("Continue");
         continueButton.setEnabled(false);
         continueButton.addActionListener(event -> onContinue.run());
+        
 
-        area = new JTextArea(28, 84);
-        area.setFont(new Font("Monospaced", Font.PLAIN, 14));
-        area.setEditable(false);
-        area.setFocusable(false);
-        area.setBackground(Color.BLACK);
-        area.setForeground(Color.GREEN);
+        copyButton = new JButton("Copy Text");
+        copyButton.setEnabled(true);
+        copyButton.addActionListener(event -> {
+        	
+            String text = areaScreen.getText();
+            StringSelection selection =new StringSelection(text);
+            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(selection, null);
+            
+        });
 
-        JScrollPane scroll = new JScrollPane(area);
+
+        areaScreen.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        areaScreen.setEditable(false);
+        areaScreen.setFocusable(false);
+        areaScreen.setBackground(Color.BLACK);
+        areaScreen.setForeground(Color.GREEN);
+
+        JScrollPane scroll = new JScrollPane(areaScreen);
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         topPanel.add(continueButton);
+        topPanel.add(copyButton);
 
         frame.add(topPanel, BorderLayout.NORTH);
         frame.add(scroll, BorderLayout.CENTER);
@@ -41,18 +59,15 @@ public class TerminalViewer {
         SwingUtilities.invokeLater(() -> frame.setVisible(true));
     }
 
-    // método principal pra atualizar tela
-    public void updateScreen(String tela) {
-        if (tela == null) return;
-
-        // evita atualizar sem mudança
-        if (tela.equals(ultimaTela)) return;
-
-        ultimaTela = tela;
+    public void updateScreen(String screen) {
+    	
+        if (screen == null) return;
+        if (screen.equals(lastScreen)) return;  // evita atualizar sem mudança
+        lastScreen = screen;
 
         SwingUtilities.invokeLater(() -> {
-            area.setText(tela);
-            area.setCaretPosition(0); // mantém topo visível
+        	areaScreen.setText(screen);
+        	areaScreen.setCaretPosition(0); // mantém topo visível
         });
     }
     

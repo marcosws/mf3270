@@ -319,7 +319,7 @@ public class S3270Emulator extends ManagerViewerContent implements IControlListe
 	 * continuously checks the screen for the presence of the specified text until it is found or the timeout is reached. If the text is found, the method returns successfully; otherwise, it throws a S3270SessionException indicating that the timeout was reached without finding the text. This method is useful for synchronizing actions based on specific content appearing on the terminal screen.
 	 * @param text The text to wait for on the screen
 	 * @param timeoutMillis The maximum time in milliseconds to wait for the text to appear
-	 * @throws S3270SessionException if the timeout is reached without finding the text on
+	 * @throws S3270EmulatorException if the timeout is reached without finding the text on
 	 */
 	public void waitForText(String text, int timeoutMillis) {
 
