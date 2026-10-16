@@ -161,8 +161,7 @@ public class S3270Session implements AutoCloseable {
 		writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
 		reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 		
-		String command = sendCommand("connect(" + host + ":" + port + ")");
-        return command;
+        return sendCommand("connect(" + host + ":" + port + ")");
 	}
     
     /**
