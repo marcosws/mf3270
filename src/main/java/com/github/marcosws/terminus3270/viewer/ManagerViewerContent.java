@@ -33,17 +33,25 @@ public abstract class ManagerViewerContent implements IScreenContent {
 	}
 	
 	protected final void pauseScreenViewer() {
-		paused = true;
-		terminalViewer.setContinueEnabled(true);
-		logger.info("Script paused; wainting for Continue in the Terminal Viewer");
-		while(paused) {
-			try {
-				pauseLock.wait();
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				paused  = false;
-				terminalViewer.setContinueEnabled(false);
-				throw new IllegalStateException("Interrupted while wanting for Continue",e);
+		
+		if (emulatorMode != EmulatorMode.VIEWER_MODE) {
+			logger.warn("pauseScript() was called without a viewer; continuing execution");
+			return;
+		}
+		
+		synchronized (pauseLock) {
+			paused = true;
+			terminalViewer.setContinueEnabled(true);
+			logger.info("Script paused; wainting for Continue in the Terminal Viewer");
+			while(paused) {
+				try {
+					pauseLock.wait();
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					paused  = false;
+					terminalViewer.setContinueEnabled(false);
+					throw new IllegalStateException("Interrupted while wanting for Continue",e);
+				}
 			}
 		}
 		
